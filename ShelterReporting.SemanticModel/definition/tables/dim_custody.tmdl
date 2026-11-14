@@ -1,0 +1,20 @@
+table dim_custody
+
+	column custody_group
+		dataType: string
+		isKey
+		sourceColumn: custody_group
+
+	column in_shelter_custody
+		dataType: boolean
+		sourceColumn: in_shelter_custody
+
+	partition dim_custody = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_custody.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"custody_group", type text}, {"in_shelter_custody", type logical}})
+				in
+				    Typed

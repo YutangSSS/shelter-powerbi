@@ -1,0 +1,52 @@
+table Measures
+
+	column x
+		dataType: int64
+		isHidden
+		sourceColumn: [x]
+
+	/// Intake events with intake date in the filtered dates (active relationship on intake_date).
+	measure 'Intakes' = COUNTROWS ( fct_stays )
+		formatString: #,0
+
+	/// Stays whose outcome date is in the filtered dates (inactive relationship on outcome_date).
+	measure 'Stays Closed' = CALCULATE ( COUNTROWS ( fct_stays ), USERELATIONSHIP ( fct_stays[outcome_date], dim_date[date] ) )
+		formatString: #,0
+
+	/// Stays closed by adoption.
+	measure 'Adoptions' = CALCULATE ( [Stays Closed], fct_stays[outcome_type] = "Adoption" )
+		formatString: #,0
+
+	/// Complete months in the filter context: the divisor for every monthly average.
+	measure 'Months in Context' = CALCULATE ( DISTINCTCOUNT ( dim_date[month_start] ), dim_date[is_complete_month] = TRUE () )
+		formatString: 0
+
+	/// Monthly average of intakes over complete months.
+	measure 'Intakes per Month' = DIVIDE ( CALCULATE ( [Intakes], dim_date[is_complete_month] = TRUE () ), [Months in Context] )
+		formatString: #,0
+
+	/// Average of month-end counts. COALESCE keeps empty months as 0; AVERAGEX would skip a blank.
+	measure 'In Care at Month End (avg)' =
+			AVERAGEX (
+				CALCULATETABLE ( VALUES ( dim_date[month_start] ), dim_date[is_complete_month] = TRUE () ),
+				COALESCE ( CALCULATE ( COUNTROWS ( fct_in_care_monthly ) ), 0 )
+			)
+		formatString: #,0
+
+	/// Same months one year earlier.
+	measure 'Intakes per Month (same months last year)' = CALCULATE ( [Intakes per Month], SAMEPERIODLASTYEAR ( dim_date[date] ) )
+		formatString: #,0
+
+	/// House rule: % change from the rounded numbers shown, divided by the earlier period.
+	measure 'Intakes per Month % Change' =
+			VAR cur = ROUND ( [Intakes per Month], 0 )
+			VAR prev = ROUND ( [Intakes per Month (same months last year)], 0 )
+			RETURN DIVIDE ( cur - prev, prev )
+		formatString: 0.0%
+
+	/// Last complete month, for the report subtitle.
+	measure 'Data Through' = FORMAT ( CALCULATE ( MAX ( dim_date[month_start] ), dim_date[is_complete_month] = TRUE (), ALL ( dim_date ) ), "mmmm yyyy" )
+
+	partition Measures = calculated
+		mode: import
+		source = ROW ( "x", 0 )

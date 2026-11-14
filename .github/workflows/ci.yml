@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Cache public dataset
+        uses: actions/cache@v4
+        with:
+          path: data/*.csv
+          key: aac-4621420f23e9008de4581d971b1a9626d2ccd506
+      - name: Fetch dataset (pinned revision, SHA-256 checked)
+        run: uv run python scripts/fetch_data.py
+      - name: Tests (export reproduces the report numbers, model references real columns)
+        run: uv run pytest -q
+      - name: Export the star schema
+        run: uv run python -m shelter.export

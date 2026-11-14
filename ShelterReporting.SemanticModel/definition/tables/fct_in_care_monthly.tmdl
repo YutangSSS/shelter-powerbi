@@ -1,0 +1,46 @@
+table fct_in_care_monthly
+
+	column month_start
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		isHidden
+		sourceColumn: month_start
+
+	column stay_id
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: stay_id
+
+	column animal_id
+		dataType: string
+		sourceColumn: animal_id
+
+	column animal_type
+		dataType: string
+		isHidden
+		sourceColumn: animal_type
+
+	column region_type
+		dataType: string
+		isHidden
+		sourceColumn: region_type
+
+	column custody_group
+		dataType: string
+		isHidden
+		sourceColumn: custody_group
+
+	column days_in_care_at_month_end
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: days_in_care_at_month_end
+
+	partition fct_in_care_monthly = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\fct_in_care_monthly.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"month_start", type date}, {"stay_id", Int64.Type}, {"animal_id", type text}, {"animal_type", type text}, {"region_type", type text}, {"custody_group", type text}, {"days_in_care_at_month_end", Int64.Type}})
+				in
+				    Typed

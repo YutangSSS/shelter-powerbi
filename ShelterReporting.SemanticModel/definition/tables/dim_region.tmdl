@@ -1,0 +1,16 @@
+table dim_region
+
+	column region_type
+		dataType: string
+		isKey
+		sourceColumn: region_type
+
+	partition dim_region = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_region.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"region_type", type text}})
+				in
+				    Typed

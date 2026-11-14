@@ -1,0 +1,16 @@
+table dim_intake_type
+
+	column intake_type
+		dataType: string
+		isKey
+		sourceColumn: intake_type
+
+	partition dim_intake_type = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_intake_type.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"intake_type", type text}})
+				in
+				    Typed

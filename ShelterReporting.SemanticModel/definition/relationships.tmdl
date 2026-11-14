@@ -1,0 +1,45 @@
+relationship stays_intake_date
+	fromColumn: fct_stays.intake_date
+	toColumn: dim_date.date
+
+relationship stays_outcome_date
+	isActive: false
+	fromColumn: fct_stays.outcome_date
+	toColumn: dim_date.date
+
+relationship stays_region
+	fromColumn: fct_stays.region_type
+	toColumn: dim_region.region_type
+
+relationship stays_animal
+	fromColumn: fct_stays.animal_type
+	toColumn: dim_animal_type.animal_type
+
+relationship stays_custody
+	fromColumn: fct_stays.custody_group
+	toColumn: dim_custody.custody_group
+
+relationship stays_intake_type
+	fromColumn: fct_stays.intake_type
+	toColumn: dim_intake_type.intake_type
+
+relationship incare_month
+	fromColumn: fct_in_care_monthly.month_start
+	toColumn: dim_date.date
+
+relationship incare_region
+	fromColumn: fct_in_care_monthly.region_type
+	toColumn: dim_region.region_type
+
+relationship incare_animal
+	fromColumn: fct_in_care_monthly.animal_type
+	toColumn: dim_animal_type.animal_type
+
+relationship incare_custody
+	fromColumn: fct_in_care_monthly.custody_group
+	toColumn: dim_custody.custody_group
+
+relationship incare_stay
+	isActive: false
+	fromColumn: fct_in_care_monthly.stay_id
+	toColumn: fct_stays.stay_id

@@ -1,0 +1,2 @@
+/// Folder holding the CSVs written by `uv run python -m shelter.export`. Change it after cloning.
+expression DataFolder = "C:\shelter-powerbi\export" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
